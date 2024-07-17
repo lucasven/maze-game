@@ -27,10 +27,50 @@ export class Client {
     }
 
     /**
+     * @param northWall (optional) 
+     * @param southWall (optional) 
+     * @param eastWall (optional) 
+     * @param westWall (optional) 
+     * @param row (optional) 
+     * @param col (optional) 
+     * @param gameRow (optional) 
+     * @param gameCol (optional) 
      * @return Success
      */
-    maze(): Observable<string[]> {
-        let url_ = this.baseUrl + "/Maze";
+    maze(northWall: boolean | undefined, southWall: boolean | undefined, eastWall: boolean | undefined, westWall: boolean | undefined, row: number | undefined, col: number | undefined, gameRow: number | undefined, gameCol: number | undefined): Observable<string[]> {
+        let url_ = this.baseUrl + "/Maze?";
+        if (northWall === null)
+            throw new Error("The parameter 'northWall' cannot be null.");
+        else if (northWall !== undefined)
+            url_ += "northWall=" + encodeURIComponent("" + northWall) + "&";
+        if (southWall === null)
+            throw new Error("The parameter 'southWall' cannot be null.");
+        else if (southWall !== undefined)
+            url_ += "southWall=" + encodeURIComponent("" + southWall) + "&";
+        if (eastWall === null)
+            throw new Error("The parameter 'eastWall' cannot be null.");
+        else if (eastWall !== undefined)
+            url_ += "eastWall=" + encodeURIComponent("" + eastWall) + "&";
+        if (westWall === null)
+            throw new Error("The parameter 'westWall' cannot be null.");
+        else if (westWall !== undefined)
+            url_ += "westWall=" + encodeURIComponent("" + westWall) + "&";
+        if (row === null)
+            throw new Error("The parameter 'row' cannot be null.");
+        else if (row !== undefined)
+            url_ += "row=" + encodeURIComponent("" + row) + "&";
+        if (col === null)
+            throw new Error("The parameter 'col' cannot be null.");
+        else if (col !== undefined)
+            url_ += "col=" + encodeURIComponent("" + col) + "&";
+        if (gameRow === null)
+            throw new Error("The parameter 'gameRow' cannot be null.");
+        else if (gameRow !== undefined)
+            url_ += "gameRow=" + encodeURIComponent("" + gameRow) + "&";
+        if (gameCol === null)
+            throw new Error("The parameter 'gameCol' cannot be null.");
+        else if (gameCol !== undefined)
+            url_ += "gameCol=" + encodeURIComponent("" + gameCol) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -75,6 +115,76 @@ export class Client {
         }
         return _observableOf<string[]>(<any>null);
     }
+
+    /**
+     * @param rows (optional) 
+     * @param columns (optional) 
+     * @return Success
+     */
+    game(rows: number | undefined, columns: number | undefined): Observable<MazeCell[]> {
+        let url_ = this.baseUrl + "/Maze/game?";
+        if (rows === null)
+            throw new Error("The parameter 'rows' cannot be null.");
+        else if (rows !== undefined)
+            url_ += "rows=" + encodeURIComponent("" + rows) + "&";
+        if (columns === null)
+            throw new Error("The parameter 'columns' cannot be null.");
+        else if (columns !== undefined)
+            url_ += "columns=" + encodeURIComponent("" + columns) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGame(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGame(<any>response_);
+                } catch (e) {
+                    return <Observable<MazeCell[]>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<MazeCell[]>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGame(response: HttpResponseBase): Observable<MazeCell[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : <MazeCell[]>JSON.parse(_responseText, this.jsonParseReviver);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<MazeCell[]>(<any>null);
+    }
+}
+
+export interface MazeCell {
+    row?: number;
+    column?: number;
+    visited?: boolean;
+    westWall?: boolean;
+    eastWall?: boolean;
+    northWall?: boolean;
+    southWall?: boolean;
 }
 
 export class ApiException extends Error {
