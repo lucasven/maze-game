@@ -3,7 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 import { AppComponent } from './app.component';
 import { LoggingService } from './logging/logging.service';
-import { StuffService } from './stuff/stuff.service';
+import { MazeService } from './maze/maze.service';
 import { environment } from '../environments/environment';
 import { ValantDemoApiClient } from './api-client/api-client';
 
@@ -16,7 +16,7 @@ export function getBaseUrl(): string {
   imports: [BrowserModule, HttpClientModule],
   providers: [
     LoggingService,
-    StuffService,
+    MazeService,
     ValantDemoApiClient.Client,
     { provide: ValantDemoApiClient.API_BASE_URL, useFactory: getBaseUrl },
   ],

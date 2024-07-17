@@ -3,6 +3,21 @@
   <h1>Welcome to {{ title }}</h1>
 </header>
 <main>
-  <h2>Hi there</h2>
-  <p>Thanks for being you.</p>
+  <div class="flex">
+    <button type="button" (click)="drawMaze()">New Maze</button>
+    <button type="button" (click)="solution()">Solution</button>
+  </div>
+  <section class="flex">
+    <canvas id="maze"></canvas>
+  </section>
+  <section>
+    <div class="arrows">
+      <div class="flex"><span [hidden]="!up" (click)="move('Up')">⬆️</span></div>
+      <div class="flex">
+        <span [hidden]="!left" (click)="move('Left')">⬅️</span>
+        <span [hidden]="!right" (click)="move('Right')">➡️</span>
+      </div>
+      <div class="flex"><span [hidden]="!down" class="down" (click)="move('Down')">⬇️</span></div>
+    </div>
+  </section>
 </main>

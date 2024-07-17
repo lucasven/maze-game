@@ -4,18 +4,20 @@ import { AppComponent } from './app.component';
 import { AppModule } from './app.module';
 import { LoggingService } from './logging/logging.service';
 import { SilentLogger } from './logging/silent-logger';
-import { StuffService } from './stuff/stuff.service';
+import { MazeService } from './maze/maze.service';
+import { setupJestCanvasMock } from 'jest-canvas-mock';
 
-const mockStuffService = { getStuff: jest.fn(() => of([])) };
+const mockMazeService = { getPossibleMovements: jest.fn(() => of([])) };
 
 describe('AppComponent', () => {
   let component: Shallow<AppComponent>;
 
   beforeEach(() => {
     component = new Shallow(AppComponent, AppModule)
-      .provideMock({ provide: StuffService, useValue: mockStuffService })
+      .provideMock({ provide: MazeService, useValue: mockMazeService })
       .provideMock({ provide: LoggingService, useClass: SilentLogger });
     jest.clearAllMocks();
+    setupJestCanvasMock();
   });
 
   it('should render', async () => {
@@ -35,6 +37,7 @@ describe('AppComponent', () => {
 
   it('gets stuff from the API on init', async () => {
     await component.render();
-    expect(mockStuffService.getStuff).toHaveBeenCalledTimes(1);
+    expect(mockMazeService.getPossibleMovements).toHaveBeenCalledTimes(1);
   });
 });
+
